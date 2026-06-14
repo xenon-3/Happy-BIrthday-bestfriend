@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d1a; min-height: 100dvh; overflow-x: hidden; font-family: 'Nunito', sans-serif; }
+
+  #canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .page {
+    position: relative; z-index: 1; min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 2rem 1.2rem 2.5rem; text-align: center;
+  }
+
+  .from-badge {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px; padding: 5px 16px; font-size: 11px;
+    color: rgba(255,255,255,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.2rem;
+  }
+
+  .headline {
+    font-family: 'Pacifico', cursive; font-size: clamp(2rem, 9vw, 4rem); line-height: 1.1;
+    background: linear-gradient(135deg, #ff6bcb 0%, #ffb347 40%, #ffec6e 70%, #ff6bcb 100%);
+    background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; animation: shimmer 4s ease infinite; margin-bottom: 0.3rem;
+  }
+  @keyframes shimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+  .name {
+    font-family: 'Pacifico', cursive; font-size: clamp(3rem, 13vw, 5.5rem); color: #fff;
+    margin-bottom: 0.8rem; animation: pulse-glow 3s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%,100% { text-shadow: 0 0 20px rgba(255,180,80,0.5), 0 0 40px rgba(255,100,180,0.3); }
+    50% { text-shadow: 0 0 40px rgba(255,180,80,0.8), 0 0 80px rgba(255,100,180,0.5); }
+  }
+
+  .cake-wrap { font-size: clamp(3rem, 12vw, 4.5rem); margin: 0.4rem 0 0.8rem; display: block; animation: bounce 2.5s ease-in-out infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  .emoji-row { display: flex; gap: 10px; justify-content: center; font-size: clamp(1.4rem, 5vw, 1.8rem); margin-bottom: 1.2rem; }
+  .emoji-row span { display: inline-block; animation: wiggle 1.5s ease-in-out infinite; }
+  .emoji-row span:nth-child(2) { animation-delay: 0.25s; }
+  .emoji-row span:nth-child(3) { animation-delay: 0.5s; }
+  .emoji-row span:nth-child(4) { animation-delay: 0.75s; }
+  .emoji-row span:nth-child(5) { animation-delay: 1s; }
+  @keyframes wiggle { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+  .wish-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px; padding: 1rem 1.3rem; width: 100%; max-width: 380px; margin-bottom: 2rem;
+  }
+  .wish-card p { font-size: clamp(0.85rem, 3.5vw, 1rem); color: rgba(255,255,255,0.65); line-height: 1.65; font-style: italic; }
+  .wish-card .signature { margin-top: 0.7rem; font-size: 0.9rem; color: #ff6bcb; font-weight: 700; font-style: normal; }
+
+  .surprise-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; width: 100%; }
+
+  /* Button — pure CSS glow pulse, no JS */
+  .surprise-btn {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: min(85vw, 320px); padding: 1.1rem 1.5rem;
+    font-family: 'Nunito', sans-serif; font-size: clamp(1rem, 4.5vw, 1.2rem); font-weight: 900;
+    color: #0d0d1a; text-decoration: none; border-radius: 80px;
+    background: linear-gradient(135deg, #ffec6e 0%, #ffb347 50%, #ff6bcb 100%);
+    box-shadow: 0 0 18px rgba(255,180,80,0.55), 0 0 40px rgba(255,100,180,0.3);
+    animation: glow-pulse 2.5s ease-in-out infinite;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+  .surprise-btn:active { transform: scale(0.95); }
+
+  @keyframes glow-pulse {
+    0%,100% { box-shadow: 0 0 18px rgba(255,180,80,0.55), 0 0 40px rgba(255,100,180,0.3); }
+    50%      { box-shadow: 0 0 32px rgba(255,180,80,0.85), 0 0 70px rgba(255,100,180,0.55); }
+  }
+
+  .ring {
+    position: absolute; inset: 0; border-radius: 80px;
+    border: 2px solid rgba(255, 180, 80, 0.5);
+    animation: ring-out 2.5s ease-out infinite;
+    pointer-events: none;
+  }
+  .ring:nth-child(2) { animation-delay: 1.25s; }
+  @keyframes ring-out { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.55); opacity: 0; } }
+
+  .surprise-hint { font-size: 0.78rem; color: rgba(255,255,255,0.35); letter-spacing: 0.05em; animation: hint-fade 3s ease-in-out infinite; }
+  @keyframes hint-fade { 0%,100% { opacity: 0.3; } 50% { opacity: 0.85; } }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div class="page">
+  <div class="from-badge">🎊 A special message for you</div>
+  <div class="headline">Happy Birthday</div>
+  <div class="name">Tanya!</div>
+  <span class="cake-wrap">🎂</span>
+  <div class="emoji-row">
+    <span>🎈</span><span>🌸</span><span>✨</span><span>🥂</span><span>🎁</span>
+  </div>
+  <div class="wish-card">
+    <p>"You make every moment more fun, every laugh louder, and every memory more precious. I'm so lucky to call you my best friend."</p>
+    <p class="signature">— With all the love 💛</p>
+  </div>
+  <div class="surprise-wrap">
+    <a class="surprise-btn" href="YOUR_VIDEO_LINK_HERE" target="_blank">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      🎁 Tap here for a surprise!
+    </a>
+    <p class="surprise-hint">✨ something special is waiting for you... ✨</p>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const COLORS = ['#ff6bcb','#ffb347','#ffec6e','#a78bfa','#60d9fa','#f9a8d4','#86efac'];
+
+// Gentle ambient floaters — simple circles, slow, few
+const ambient = Array.from({length: 22}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: Math.random() * 2.5 + 1,
+  color: COLORS[Math.floor(Math.random() * COLORS.length)],
+  vy: -(Math.random() * 0.35 + 0.1),
+  alpha: Math.random() * 0.3 + 0.1,
+}));
+
+// One-shot burst — particles age out fully and array empties
+let burst = [];
+
+function launchBurst() {
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight * 0.35;
+  for (let i = 0; i < 55; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 6 + 2;
+    burst.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 3.5,
+      r: Math.random() * 4 + 2,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: 1,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.12,
+      gravity: 0.22,
+      decay: 0.014 + Math.random() * 0.006
+    });
+  }
+}
+
+let raf;
+function loop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Ambient — only draw, no removal
+  for (const p of ambient) {
+    p.y += p.vy;
+    if (p.y < -10) { p.y = canvas.height + 5; p.x = Math.random() * canvas.width; }
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Burst — remove when fully faded
+  for (let i = burst.length - 1; i >= 0; i--) {
+    const p = burst[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += p.gravity; p.vx *= 0.985;
+    p.angle += p.spin;
+    p.alpha -= p.decay;
+    if (p.alpha <= 0) { burst.splice(i, 1); continue; }
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.alpha);
+    ctx.fillStyle = p.color;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    ctx.fillRect(-p.r, -p.r * 0.5, p.r * 2, p.r);
+    ctx.restore();
+  }
+
+  ctx.globalAlpha = 1;
+  raf = requestAnimationFrame(loop);
+}
+
+loop();
+setTimeout(launchBurst, 350);
+</script>
+</body>
+</html>
